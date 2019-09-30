@@ -3,7 +3,7 @@
 #include <stdio.h>          /* current usage requires -n to be second */
 #include <stdlib.h>         /* arg, with int directly after, however */
 #include <ctype.h>          /* could implement -n from anywhere in */
-#include <string.h>         /* the command line */
+#include <string.h>         /* command line using getopt() */
 
 
 int validInt(char string[]);    /* helper function checks that an int */
