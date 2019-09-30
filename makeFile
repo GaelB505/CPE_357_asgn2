@@ -1,0 +1,5 @@
+CC = gcc
+CFLAGS = -Wall -ansi -pedantic -c -O -o 
+
+fw: fw.c
+	$(CC) $(CFLAGS) fw fw.c
