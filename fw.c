@@ -3,8 +3,8 @@
 #include <stdio.h>          /* current usage requires -n to be second */
 #include <stdlib.h>         /* arg, with int directly after, however */
 #include <ctype.h>          /* could implement -n from anywhere in */
-#include <string.h>         /* command line using getopt() */
-
+#include <string.h>         /* the command line */
+#include "nextWord.c"
 
 int validInt(char string[]);    /* helper function checks that an int */
                                 /* has been passed */
@@ -13,6 +13,8 @@ int main(int argc, char *argv[]) {
     int wordsToShow = 10;   /* the default value */
     int numFiles = argc;    /* used to track how many files will be read */
     int argSkip;            /* used to track how many rgs to skip */
+    char *word;
+
 
     if (argc == 1) {        /* case where no args passed */
         numFiles--;         /* one arg, so no files to be read */
@@ -58,6 +60,11 @@ int main(int argc, char *argv[]) {
     
     if (numFiles == 0) {
         printf("Read from stdin and display %d words.\n", wordsToShow);
+        word = getWord(stdin);
+            while (*word != '\0') {
+                printf("%s\n", word);
+                word = getWord(stdin);
+            }
     }
     else {
         int currFile = 0;       /* file being read */
