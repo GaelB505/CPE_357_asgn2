@@ -1,31 +1,44 @@
-while (currFile != numFiles) {
-    FILE *file = fopen(argv[currFile + argSkip], "r");
-    if (file == NULL) {
-        perror("fopen");
-        free(word);
-        fclose(file);
-        currFile++;
-        break;
-    }
-    word = malloc(sizeof(char) * 50);
-    word = getWordz(file, word);
-    while (word != NULL) {
-        key = word;
-        if(hashSearch(HT, key) == 0){
-            insertHash(HT, key, 1);
-        }
-        free(word);
+/* at this point, we have the number of words to show */
+    /* and the number of files we will be reading */
+    Hashtable HT = createInitialHash();
+    if (numFiles == 0) {
         word = malloc(sizeof(char) * 50);
-        word = getWordz(file, word);
+        word = getWordz(stdin, word);
+            while (word != NULL) {
+                key = word;
+                if(hashSearch(HT, key) == 0){
+                    insertHash(HT, key, 1);
+                }
+                free(word);
+                word = malloc(sizeof(char) * 50);
+                word = getWordz(stdin, word);
+            }
+            free(word);
     }
-    free(word);
-    fclose(file);
-    currFile++;
-}
-if(wordsToShow == 0){
-    printf("The top %d words (out of %d) are:", wordsToShow, HT->n);
-}
-if (HT->n == 0) {
-    printf("No words to show\n");
-    exit(EXIT_SUCCESS);
-}
+    else {
+        int currFile = 0;       /* file being read */
+        
+        while (currFile != numFiles) {
+            FILE *file = fopen(argv[currFile + argSkip], "r");
+            if (file == NULL) {
+                perror("file");
+                currFile++;
+                
+            } else {
+                word = malloc(sizeof(char) * 50);
+                word = getWordz(file, word);
+                while (word != NULL) {
+                    key = word;
+                    if(hashSearch(HT, key) == 0){
+                        insertHash(HT, key, 1);
+                    }
+                    free(word);
+                    word = malloc(sizeof(char) * 50);
+                    word = getWordz(file, word);
+                }
+                free(word);
+                fclose(file);
+                currFile++;
+            }
+        }
+    }
