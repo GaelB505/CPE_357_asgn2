@@ -1,5 +1,29 @@
+SHELL = /bin/sh
 CC = gcc
-CFLAGS = -Wall -ansi -pedantic -c -O -o 
+CFLAGS = -Wall -O -ansi -c
+LD = gcc
+MAIN = fw
+OBJS = $(MAIN).o
+LDFLAGS = 
+TEST = test1 test2 test3
 
-fw: fw.c
-	$(CC) $(CFLAGS) fw fw.c
+
+all: $(MAIN)
+
+prog: $(MAIN)
+
+clean:
+	rm -f $(OBJS)
+
+
+$(MAIN): $(MAIN).o
+	$(LD) $(LDFLAGS) -o $(MAIN) $(MAIN).o 
+
+$(MAIN).o: $(MAIN).c
+	$(CC) $(CFLAGS) -o $(MAIN).o $(MAIN).c
+
+test: $(MAIN)
+	@echo "Testing $(MAIN):\n"
+	./$(MAIN) $(TEST)
+	@echo
+	@echo Test Complete!
