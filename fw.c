@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
             while (word != NULL) {
                 printf("%s\n", word);
                 free(word);
-                 word = malloc(sizeof(char) * 50);
+                word = malloc(sizeof(char) * 50);
                 word = getWord(stdin, word);
             }
     }
@@ -75,11 +75,13 @@ int main(int argc, char *argv[]) {
             FILE *file = fopen(argv[currFile + argSkip], "r");
             word = malloc(sizeof(char) * 50);
             word = getWord(file, word);
+            word = trimWord(word);
             while (word != NULL) {
                 printf("%s\n", word);
                 free(word);
                 word = malloc(sizeof(char) * 50);
                 word = getWord(file, word);
+                word = trimWord(word);
             }
             currFile++;
         }                   /* Ex, first file is 4th arg */

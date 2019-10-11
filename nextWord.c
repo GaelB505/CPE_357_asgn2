@@ -4,15 +4,16 @@
 #include <ctype.h>
 
 char *getWord(FILE *file, char* word);
+char *trimWord(char *word);
 
 char *getWord(FILE *file, char* word) {
-    int buffer = 50;            /*initial buffer 100 long*/
-    int bufferAdd = 50;
+    int buffer = 50;            /*initial buffer 50 long*/
+    int bufferAdd = 50;         /*if realloc necessary*/
     char* temp;                 /*iterate through new*/
     char c;  
     int numItems = 0;           
     
-    temp = word;                        /*function to read line*/
+    temp = word;                        
     c = getc(file);                     /*get first char*/
     while (0 == isalpha(c)) {
         if (c == EOF) {                 /*if EOF, return NULL*/
@@ -22,14 +23,12 @@ char *getWord(FILE *file, char* word) {
         c = getc(file);                 /*get next char until alpha found*/
     }
 
-
-    while (0 != isalpha(c)) {      /*realloc both if needed*/
-
-        c = tolower(c);
-        *temp = c;                          
+    while (0 != isalpha(c)) {     /*reading word, continue till nonalpha*/
+        c = tolower(c);         
+        *temp = c;                /*store char*/          
         temp++;
         numItems++;
-        if (numItems == buffer - 10) {    
+        if (numItems == buffer - 10) {     /*realloc if necessary*/
             buffer += bufferAdd;
             word = realloc(word, sizeof(char) * buffer);
             temp = word;
@@ -39,9 +38,24 @@ char *getWord(FILE *file, char* word) {
                 i++;
             }
         }
-        c = getc(file);
+        c = getc(file);         /*get next char*/
     }
-   *temp = '\0';
+   *temp = '\0';                /*add null termination*/
     
     return word;
+}
+
+
+
+char *trimWord(char *word) {
+    char *trimmed;
+    if (word == NULL) {
+        return NULL;
+    }
+    trimmed = malloc(sizeof(char) * (strlen(word) + 1));
+    if (word != NULL) {
+        trimmed = strcpy(trimmed, word);
+    }
+    free(word);
+    return trimmed;
 }
