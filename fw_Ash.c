@@ -30,6 +30,7 @@ struct hashtable {
 int validInt(char string[]);
 char *getWordz(FILE *file, char *word);
 int alreadyInArr(Hashtable HT, int index, int size, struct data *arr[]);
+int stringSort(char *p1, char *p2);
 Hashtable createHash(int size);
 Hashtable createInitialHash(void);
 static unsigned long hashf(const char *s);
@@ -37,9 +38,11 @@ void deleteHash(Hashtable h);
 static void expand(Hashtable h);
 void insertHash(Hashtable h, const char *key, int value);
 int hashSearch(Hashtable h, const char *key);
+struct data *sortArray(struct data *arr[], int size);
 
+void printArray(struct data *arr[], int size);
 
-
+struct data *arr[1000];
 
 int main(int argc, char *argv[]){
     int wordsToShow = 10;   /* the default value */
@@ -48,7 +51,6 @@ int main(int argc, char *argv[]){
     int i;
     char *word;
     char *key = NULL;
-    struct data *arr[1000];
     int arrayIndex = 0;
     
     
@@ -90,6 +92,7 @@ int main(int argc, char *argv[]){
     
     /* at this point, we have the number of words to show */
     /* and the number of files we will be reading */
+    
     if (numFiles == 0) {
         Hashtable HT = createInitialHash();
         word = malloc(sizeof(char) * 50);
@@ -108,6 +111,12 @@ int main(int argc, char *argv[]){
         
         while (currFile != numFiles) {
             FILE *file = fopen(argv[currFile + argSkip], "r");
+            if (file == NULL) {
+                perror("fopen");
+                fclose(file);
+                currFile++;
+                break;
+            }
             word = malloc(sizeof(char) * 50);
             word = getWordz(file, word);
             while (word != NULL) {
@@ -125,6 +134,10 @@ int main(int argc, char *argv[]){
         }
         if(wordsToShow == 0){
             printf("The top %d words (out of %d) are:", wordsToShow, HT->n);
+        }
+        if (HT->n == 0) {
+            printf("No words to show\n");
+            exit(EXIT_SUCCESS);
         }
         
         
@@ -172,6 +185,7 @@ int main(int argc, char *argv[]){
             bigFreq = 0;
             arrayIndex++;
         }
+        sortArray(arr, arrayIndex);
         
         /*print final result*/
         printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
@@ -371,4 +385,98 @@ int alreadyInArr(Hashtable HT, int index, int size, struct data *arr[]){
         }
     }
     return 0;
+}
+
+struct data *sortArray(struct data *arr[], int size){
+    int prevFreq = 0;
+    int currBigFreq = 0;
+    struct data *e;
+    int nextPrint = 0;
+    int newFreq = 0;
+    int start = 1;
+    
+    /*take first of array*/
+    prevFreq = arr[0]->value;
+    /*iterate through array*/
+    while(nextPrint+1 != size){
+        if(nextPrint != 0){
+            start = ++nextPrint;
+        }
+        prevFreq = arr[start]->value;
+        for(int i = start+1; i < size; i++){
+            
+            printArray(arr, size);
+            currBigFreq = arr[i]->value;
+            /*if they have the same frequency*/
+            if(currBigFreq == prevFreq){
+                if(newFreq == 0){
+                    
+                    newFreq = 1;
+                }
+                if(stringSort(arr[nextPrint]->key, arr[i]->key) != 0){
+                    e = arr[nextPrint];
+                    arr[nextPrint] = arr[i];
+                    arr[i] = e;
+                }
+            } else {
+                nextPrint = i;
+                newFreq = 0;
+            }
+            if(currBigFreq > prevFreq){
+                e = arr[i-1];
+                arr[i-1] = arr[i];
+                arr[i] = e;
+            }
+            prevFreq = currBigFreq;
+            currBigFreq = 0;
+            
+        }
+    }
+    return *arr;
+}
+
+void printArray(struct data *arr[], int size){
+    printf("[");
+    for(int i = 0; i < size; i++){
+        printf("(%s, %d)", arr[i]->key, arr[i]->value);
+    }
+    printf("]\n");
+}
+
+int stringSort(char *first, char *second) {
+    /*if first comes before second, return 0*/
+    /*if second should come first, return 1*/
+    char *traverse1;
+    char *traverse2;
+    int x = 1;
+    char letter1;
+    char letter2;
+    
+    traverse1 = first;
+    traverse2 = second;
+    
+    letter1 = *traverse1;
+    letter2 = *traverse2;
+    
+    while (x == 1) {
+        if ((letter1 == '\0') && (letter2 != '\0')) {
+            return 0;
+        }
+        if ((letter1 != '\0') && (letter2 == '\0')) {
+            return 1;
+        }
+        if (letter1 < letter2) {
+            return 0;
+        } else if (letter2 < letter1) {
+            return 1;
+        } else {
+            traverse1++;
+            traverse2++;
+            letter1 = *traverse1;
+            letter2 = *traverse2;
+        }
+        
+    }
+    return 0;
+    
 }
