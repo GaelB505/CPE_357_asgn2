@@ -12,7 +12,7 @@ int validInt(char string[]);    /* helper function checks that an int */
 int main(int argc, char *argv[]) {
     int wordsToShow = 10;   /* the default value */
     int numFiles = argc;    /* used to track how many files will be read */
-    int argSkip;            /* used to track how many rgs to skip */
+    int argSkip = 0;;            /* used to track how many rgs to skip */
     char *word;
 
 
@@ -60,17 +60,27 @@ int main(int argc, char *argv[]) {
     
     if (numFiles == 0) {
         printf("Read from stdin and display %d words.\n", wordsToShow);
-        word = getWord(stdin);
-            while (*word != '\0') {
+        word = malloc(sizeof(char) * 50);
+        word = getWord(stdin, word);
+            while (word != NULL) {
                 printf("%s\n", word);
-                word = getWord(stdin);
+                free(word);
+                 word = malloc(sizeof(char) * 50);
+                word = getWord(stdin, word);
             }
     }
     else {
         int currFile = 0;       /* file being read */
         while (currFile != numFiles) {
-            printf("Read file %s and display %d words.\n",  
-                        argv[currFile + argSkip], wordsToShow);
+            FILE *file = fopen(argv[currFile + argSkip], "r");
+            word = malloc(sizeof(char) * 50);
+            word = getWord(file, word);
+            while (word != NULL) {
+                printf("%s\n", word);
+                free(word);
+                word = malloc(sizeof(char) * 50);
+                word = getWord(file, word);
+            }
             currFile++;
         }                   /* Ex, first file is 4th arg */
     }

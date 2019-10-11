@@ -3,41 +3,45 @@
 #include <string.h>
 #include <ctype.h>
 
-char *getWord(FILE *file);
+char *getWord(FILE *file, char* word);
 
-char *getWord(FILE *file) {
+char *getWord(FILE *file, char* word) {
     int buffer = 50;            /*initial buffer 100 long*/
     int bufferAdd = 50;
-    char* newWord;              /*point to new line*/
     char* temp;                 /*iterate through new*/
     char c;  
     int numItems = 0;           
+    
+    temp = word;                        /*function to read line*/
+    c = getc(file);                     /*get first char*/
+    while (0 == isalpha(c)) {
+        if (c == EOF) {                 /*if EOF, return NULL*/
+            word = NULL;
+            return word;                
+        }
+        c = getc(file);                 /*get next char until alpha found*/
+    }
 
-    newWord = malloc(sizeof(char) * buffer);    /*allocate for newWord*/
 
-    temp = newWord;                        /*function to read line*/
-    while ((c = getc(file)) != EOF) {      /*realloc both if needed*/
-        int isChar;
-        isChar = isalpha(c);
-        if (isChar == 0) {
-            *temp = '\0';
-            return newWord;
-        } 
+    while (0 != isalpha(c)) {      /*realloc both if needed*/
+
         c = tolower(c);
         *temp = c;                          
         temp++;
         numItems++;
-        if (numItems == buffer - 10) {      /*realloc if needed*/
+        if (numItems == buffer - 10) {    
             buffer += bufferAdd;
-            newWord = realloc(newWord, sizeof(char) * buffer);
-            temp = newWord;
+            word = realloc(word, sizeof(char) * buffer);
+            temp = word;
             int i = 0;
-            while (i != numItems) {         /*return to previous location*/ 
+            while (i != numItems) {         
                 temp++;
                 i++;
             }
         }
+        c = getc(file);
     }
-
-    return newWord;
+   *temp = '\0';
+    
+    return word;
 }
