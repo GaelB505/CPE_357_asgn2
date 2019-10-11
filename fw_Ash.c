@@ -15,7 +15,7 @@ typedef struct hashtable *Hashtable;
 struct data {
     struct data *next;
     char *key;
-    int *value;
+    int value;
 };
 
 /*hashtable structure*/
@@ -34,8 +34,8 @@ Hashtable createInitialHash(void);
 static unsigned long hashf(const char *s);
 void deleteHash(Hashtable h);
 static void expand(Hashtable h);
-void insertHash(Hashtable h, const char *key, int *value);
-int *hashSearch(Hashtable h, const char *key);
+void insertHash(Hashtable h, const char *key, int value);
+int hashSearch(Hashtable h, const char *key);
 
 
 
@@ -46,7 +46,6 @@ int main(int argc, char *argv[]){
     int i;
     char *word;
     char *key = NULL;
-    int *value;
     
     
     
@@ -90,50 +89,48 @@ int main(int argc, char *argv[]){
     /* at this point, we have the number of words to show */
     /* and the number of files we will be reading */
     
-    //    if (numFiles == 0) {
-    //        Hashtable HT = createInitialHash();
-    //        printf("Read from stdin and display %d words.\n", wordsToShow);
-    //        word = malloc(sizeof(char) * 50);
-    //        word = getWordz(stdin, word);
-    //        while (word != NULL) {
-    //            printf("%s\n", word);
-    //            free(word);
-    //            word = malloc(sizeof(char) * 50);
-    //            word = getWordz(stdin, word);
-    //        }
-    //        deleteHash(HT);
-    //    }
-    //    else {
-    numFiles = 1;
-    Hashtable HT = createInitialHash();
-    int currFile = 0;       /* file being read */
-    value = malloc(sizeof(int));
-    while (currFile != numFiles) {
-        FILE *file = fopen("testFile.txt", "r");
+    if (numFiles == 0) {
+        Hashtable HT = createInitialHash();
+        printf("Read from stdin and display %d words.\n", wordsToShow);
         word = malloc(sizeof(char) * 50);
-        *value = 1;
-        word = getWordz(file, word);
+        word = getWordz(stdin, word);
         while (word != NULL) {
             printf("%s\n", word);
-            key = word;
-            if(hashSearch(HT, key) == 0){
-                insertHash(HT, key, value);
-            }
             free(word);
             word = malloc(sizeof(char) * 50);
-            word = getWordz(file, word);
+            word = getWordz(stdin, word);
         }
-        currFile++;
-        struct data *e;
+        deleteHash(HT);
+    }
+    else {
+        Hashtable HT = createInitialHash();
         
-        for (i = 0; i < HT->size; i++){
-            if((e = HT->table[i]) != 0){
-                printf("%s, %d\n", e->key, *e->value);
+        int currFile = 0;       /* file being read */
+        while (currFile != numFiles) {
+            FILE *file = fopen(argv[currFile + argSkip], "r");
+            word = malloc(sizeof(char) * 50);
+            word = getWordz(file, word);
+            while (word != NULL) {
+                printf("%s\n", word);
+                key = word;
+                if(hashSearch(HT, key) == 0){
+                    insertHash(HT, key, 1);
+                }
+                free(word);
+                word = malloc(sizeof(char) * 50);
+                word = getWordz(file, word);
+            }
+            currFile++;
+            struct data *e;
+            
+            for (i = 0; i < HT->size; i++){
+                if((e = HT->table[i]) != 0){
+                    printf("%s, %d\n", e->key, e->value);
+                }
             }
         }
+        deleteHash(HT);
     }
-    deleteHash(HT);
-    //    }
     return 0;
 }
 
@@ -222,7 +219,7 @@ static void expand(Hashtable h){
 }
 
 /*insert new word*/
-void insertHash(Hashtable h, const char *key, int *value){
+void insertHash(Hashtable h, const char *key, int value){
     struct data *e;
     unsigned long f;
     
@@ -249,7 +246,7 @@ void insertHash(Hashtable h, const char *key, int *value){
 
 
 /*Look for word*/
-int *hashSearch(Hashtable h, const char *key){
+int hashSearch(Hashtable h, const char *key){
     struct data *e;
     
     /*look through hashtable*/
