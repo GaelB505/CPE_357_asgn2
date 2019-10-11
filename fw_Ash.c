@@ -128,8 +128,10 @@ int main(int argc, char *argv[]){
                     printf("%s, %d\n", e->key, e->value);
                 }
             }
+            fclose(file);
+            
         }
-        deleteHash(HT);
+        //        deleteHash(HT);
     }
     return 0;
 }
