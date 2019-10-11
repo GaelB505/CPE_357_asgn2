@@ -28,6 +28,7 @@ struct hashtable {
 
 /*Function calls*/
 int validInt(char string[]);
+char *getWordz(FILE *file, char *word);
 Hashtable createHash(int size);
 Hashtable createInitialHash(void);
 static unsigned long hashf(const char *s);
@@ -36,6 +37,105 @@ static void expand(Hashtable h);
 void insertHash(Hashtable h, const char *key, int *value);
 int *hashSearch(Hashtable h, const char *key);
 
+
+
+int main(int argc, char *argv[]){
+    int wordsToShow = 10;   /* the default value */
+    int numFiles = argc;    /* used to track how many files will be read */
+    int argSkip = 0;            /* used to track how many rgs to skip */
+    int i;
+    char *word;
+    char *key = NULL;
+    int *value;
+    
+    
+    
+    if (argc == 1) {        /* case where no args passed */
+        numFiles--;         /* one arg, so no files to be read */
+        /* and no optional args */
+        
+    } else if ((0 == strcmp(argv[1], "-n")) && (argc == 2)) {
+        fprintf(stderr, "usage: fw [-n num] [file1 [file2 ...] ]");
+        exit(1);
+        
+        /* ^^ this test checks if there are any args after -n */
+        /* if there aren't any, we know there will be an error */
+        
+        
+        /* at this point, we know we have the correct number of args */
+        /* to at least attempt continuing the program */
+        
+        
+    } else if (0 == strcmp(argv[1], "-n")) {    /* else, at least one arg */
+        i = validInt(argv[2]);      /* check that -n has proper int after */
+        
+        if (i == 0) {               /* good, proper int */
+            wordsToShow = atoi(argv[2]);
+            printf("Show the top %d words.\n", wordsToShow);
+            
+        } else {
+            fprintf(stderr, "usage: fw [-n num] [file1 [file2 ...] ]");
+            exit(1);
+        }                           /* bad int, throw error */
+        numFiles = numFiles - 3;    /* first 3 args can't be files */
+        argSkip = 3;                /* -n was successfully passed, */
+        /* skip first 3 args */
+        
+        
+    } else if (0 != strcmp(argv[1], "-n")) {    /* the second arg isn't -n */
+        numFiles--;                 /* every arg now will be a file */
+        argSkip = 1;                /* no -n, skip only first arg */
+    }
+    
+    /* at this point, we have the number of words to show */
+    /* and the number of files we will be reading */
+    
+    //    if (numFiles == 0) {
+    //        Hashtable HT = createInitialHash();
+    //        printf("Read from stdin and display %d words.\n", wordsToShow);
+    //        word = malloc(sizeof(char) * 50);
+    //        word = getWordz(stdin, word);
+    //        while (word != NULL) {
+    //            printf("%s\n", word);
+    //            free(word);
+    //            word = malloc(sizeof(char) * 50);
+    //            word = getWordz(stdin, word);
+    //        }
+    //        deleteHash(HT);
+    //    }
+    //    else {
+    numFiles = 1;
+    Hashtable HT = createInitialHash();
+    int currFile = 0;       /* file being read */
+    value = malloc(sizeof(int));
+    while (currFile != numFiles) {
+        FILE *file = fopen("testFile.txt", "r");
+        word = malloc(sizeof(char) * 50);
+        *value = 1;
+        word = getWordz(file, word);
+        while (word != NULL) {
+            printf("%s\n", word);
+            key = word;
+            if(hashSearch(HT, key) == 0){
+                insertHash(HT, key, value);
+            }
+            free(word);
+            word = malloc(sizeof(char) * 50);
+            word = getWordz(file, word);
+        }
+        currFile++;
+        struct data *e;
+        
+        for (i = 0; i < HT->size; i++){
+            if((e = HT->table[i]) != 0){
+                printf("%s, %d\n", e->key, *e->value);
+            }
+        }
+    }
+    deleteHash(HT);
+    //    }
+    return 0;
+}
 
 
 /*initialize hashtable*/
@@ -88,7 +188,6 @@ void deleteHash(Hashtable h){
         for(e = h->table[i]; e != 0; e = next){
             next = e->next;
             free(e->key);
-            free(e->value);
             free(e);
         }
     }
@@ -128,7 +227,6 @@ void insertHash(Hashtable h, const char *key, int *value){
     unsigned long f;
     
     assert(key);
-    assert(value);
     
     e = malloc(sizeof(*e));
     assert(e);
@@ -158,76 +256,54 @@ int *hashSearch(Hashtable h, const char *key){
     for(e = h->table[hashf(key) % h->size]; e != 0; e = e->next){
         /*see if strings are the same*/
         if(!strcmp(e->key, key)){
-            return e->value;
+            return e->value++;
         }
     }
     /*search failed*/
     return 0;
 }
 
-int main(int argc, char *argv[]){
-    int wordsToShow = 10;   /* the default value */
-    int numFiles = argc;    /* used to track how many files will be read */
-    int argSkip;            /* used to track how many rgs to skip */
-    int i;
-    
-    if (argc == 1) {        /* case where no args passed */
-        numFiles--;         /* one arg, so no files to be read */
-        /* and no optional args */
-        
-    } else if ((0 == strcmp(argv[1], "-n")) && (argc == 2)) {
-        fprintf(stderr, "Usage: ./fw -n <int> file file2 ...\n");
-        exit(1);
-        
-        /* ^^ this test checks if there are any args after -n */
-        /* if there aren't any, we know there will be an error */
-        
-        
-        /* at this point, we know we have the correct number of args */
-        /* to at least attempt continuing the program */
-        
-        
-    } else if (0 == strcmp(argv[1], "-n")) {    /* else, at least one arg */
-        i = validInt(argv[2]);      /* check that -n has proper int after */
-        
-        if (i == 0) {               /* good, proper int */
-            wordsToShow = atoi(argv[2]);
-            printf("Show the top %d words.\n", wordsToShow);
-            
-        } else {
-            fprintf(stderr, "Usage: ./fw -n <int> file file2 ...\n");
-            exit(1);
-        }                           /* bad int, throw error */
-        numFiles = numFiles - 3;    /* first 3 args can't be files */
-        argSkip = 3;                /* -n was successfully passed, */
-        /* skip first 3 args */
-        
-        
-    } else if (0 != strcmp(argv[1], "-n")) {    /* the second arg isn't -n */
-        numFiles--;                 /* every arg now will be a file */
-        argSkip = 1;                /* no -n, skip only first arg */
-    }
-    
-    /* at this point, we have the number of words to show */
-    /* and the number of files we will be reading */
-    
-    if (numFiles == 0) {
-        printf("Read from stdin and display %d words.\n", wordsToShow);
-    }
-    else {
-        int currFile = 0;       /* file being read */
-        while (currFile != numFiles) {
-            printf("Read file %s and display %d words.\n",
-                   argv[currFile + argSkip], wordsToShow);
-            currFile++;
-        }                   /* Ex, first file is 4th arg */
-    }
-    
-    
-    
-    return 0;
-}
 
+char *getWordz(FILE *file, char* word) {
+    int buffer = 50;            /*initial buffer 100 long*/
+    int bufferAdd = 50;
+    char* temp;                 /*iterate through new*/
+    char c;
+    int numItems = 0;
+    
+    temp = word;                        /*function to read line*/
+    c = getc(file);                     /*get first char*/
+    while (0 == isalpha(c)) {
+        if (c == EOF) {                 /*if EOF, return NULL*/
+            word = NULL;
+            return word;
+        }
+        c = getc(file);                 /*get next char until alpha found*/
+    }
+    
+    
+    while (0 != isalpha(c)) {      /*realloc both if needed*/
+        
+        c = tolower(c);
+        *temp = c;
+        temp++;
+        numItems++;
+        if (numItems == buffer - 10) {
+            buffer += bufferAdd;
+            word = realloc(word, sizeof(char) * buffer);
+            temp = word;
+            int i = 0;
+            while (i != numItems) {
+                temp++;
+                i++;
+            }
+        }
+        c = getc(file);
+    }
+    *temp = '\0';
+    
+    return word;
+}
 
 int validInt(char string[]) {
     int count = 0;                          /* iterate through string */
@@ -238,5 +314,4 @@ int validInt(char string[]) {
         count++;                            /* otherwise, the value can be */
     }                                       /* converted into a string */
     return 0;
-    
 }
