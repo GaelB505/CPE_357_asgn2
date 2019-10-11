@@ -157,7 +157,8 @@ int main(int argc, char *argv[]){
                 /*if there is something in hashtable*/
                 if((e = HT->table[i]) != 0){
                     /*is it bigger than other frequencies*/
-                    if(arr[arrayIndex] == NULL && alreadyInArr(HT, i, arrayIndex, arr) == 0){
+                    if(arr[arrayIndex] == NULL &&
+                       alreadyInArr(HT, i, arrayIndex, arr) == 0){
                         arr[arrayIndex] = e;
                         bigFreq = e->value;
                     }
@@ -189,8 +190,9 @@ int main(int argc, char *argv[]){
         
         /*print final result*/
         printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
-        for(int x = 0; x < wordsToShow; x++){
-            printf("\t %d %s\n", arr[x]->value, arr[x]->key);
+        int x;
+        for(x = 0; x < wordsToShow; x++){
+            printf("%9d %s\n", arr[x]->value, arr[x]->key);
         }
         deleteHash(HT);
     }
@@ -379,7 +381,8 @@ int validInt(char string[]) {
 int alreadyInArr(Hashtable HT, int index, int size, struct data *arr[]){
     struct data *e = HT->table[index];
     
-    for(int j = 0; j < size; j++){
+    int j;
+    for(j = 0; j < size; j++){
         if(arr[j]->key == e->key){
             return 1;
         }
@@ -403,7 +406,8 @@ struct data *sortArray(struct data *arr[], int size){
             start = ++nextPrint;
         }
         prevFreq = arr[start]->value;
-        for(int i = start+1; i < size; i++){
+        int i;
+        for(i = start+1; i < size; i++){
             
             printArray(arr, size);
             currBigFreq = arr[i]->value;
@@ -437,7 +441,8 @@ struct data *sortArray(struct data *arr[], int size){
 
 void printArray(struct data *arr[], int size){
     printf("[");
-    for(int i = 0; i < size; i++){
+    int i;
+    for(i = 0; i < size; i++){
         printf("(%s, %d)", arr[i]->key, arr[i]->value);
     }
     printf("]\n");
