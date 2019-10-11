@@ -1,0 +1,31 @@
+while (currFile != numFiles) {
+    FILE *file = fopen(argv[currFile + argSkip], "r");
+    if (file == NULL) {
+        perror("fopen");
+        free(word);
+        fclose(file);
+        currFile++;
+        break;
+    }
+    word = malloc(sizeof(char) * 50);
+    word = getWordz(file, word);
+    while (word != NULL) {
+        key = word;
+        if(hashSearch(HT, key) == 0){
+            insertHash(HT, key, 1);
+        }
+        free(word);
+        word = malloc(sizeof(char) * 50);
+        word = getWordz(file, word);
+    }
+    free(word);
+    fclose(file);
+    currFile++;
+}
+if(wordsToShow == 0){
+    printf("The top %d words (out of %d) are:", wordsToShow, HT->n);
+}
+if (HT->n == 0) {
+    printf("No words to show\n");
+    exit(EXIT_SUCCESS);
+}
