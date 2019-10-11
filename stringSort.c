@@ -7,7 +7,7 @@ int stringSort(char *first, char *second) {
     /*if second should come first, return 1*/
     char *traverse1;
     char *traverse2;
-    
+    int x = 1;
     char letter1;
     char letter2;
 
@@ -17,7 +17,7 @@ int stringSort(char *first, char *second) {
     letter1 = *traverse1;
     letter2 = *traverse2;
 
-    while (0) {
+    while (x == 1) {
         if ((letter1 == '\0') && (letter2 != '\0')) {
             return 0;
         }
@@ -36,5 +36,6 @@ int stringSort(char *first, char *second) {
         }
 
     }
+    return 0;
 
 }
