@@ -17,7 +17,13 @@ int stringSort(char *first, char *second) {
     letter1 = *traverse1;
     letter2 = *traverse2;
 
-    while ((letter1 != '\0') && (letter2 != '\0')) {
+    while (0) {
+        if ((letter1 == '\0') && (letter2 != '\0')) {
+            return 0;
+        }
+        if ((letter1 != '\0') && (letter2 == '\0')) {
+            return 1;
+        }
         if (letter1 < letter2) {
             return 0;
         } else if (letter2 < letter1) {
