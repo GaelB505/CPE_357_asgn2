@@ -92,16 +92,83 @@ int main(int argc, char *argv[]){
     
     /* at this point, we have the number of words to show */
     /* and the number of files we will be reading */
-    
+    numFiles = 1;
     if (numFiles == 0) {
         Hashtable HT = createInitialHash();
         word = malloc(sizeof(char) * 50);
         word = getWordz(stdin, word);
         while (word != NULL) {
-            printf("%s\n", word);
+            key = word;
+            if(hashSearch(HT, key) == 0){
+                insertHash(HT, key, 1);
+            }
             free(word);
             word = malloc(sizeof(char) * 50);
             word = getWordz(stdin, word);
+        }
+        free(word);
+        
+        if(wordsToShow == 0){
+            printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
+        }
+        if (HT->n == 0) {
+            printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
+            exit(EXIT_SUCCESS);
+        }
+        
+        
+        if(wordsToShow > HT->n){
+            wordsToShow = HT->n;
+        }
+        
+        /*finding top words*/
+        struct data *e;
+        int prevBigFreq = 0;
+        int bigFreq = 0;
+        int done = 1;
+        
+        while(done != 0){
+            /*iterate through hashtable*/
+            for (i = 0; i < HT->size; i++){
+                /*if there is something in hashtable*/
+                if((e = HT->table[i]) != 0){
+                    /*is it bigger than other frequencies*/
+                    if(arr[arrayIndex] == NULL &&
+                       alreadyInArr(HT, i, arrayIndex, arr) == 0){
+                        arr[arrayIndex] = e;
+                        bigFreq = e->value;
+                    }
+                    if(bigFreq <= e->value){
+                        if(arrayIndex == 0){
+                            arr[arrayIndex] = e;
+                            bigFreq = e->value;
+                        } else {
+                            /*check if we didn't add this yet*/
+                            if (!alreadyInArr(HT, i, arrayIndex, arr)){
+                                /*add to array and update freq*/
+                                arr[arrayIndex] = e;
+                                bigFreq = e->value;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if((prevBigFreq != bigFreq) && (arrayIndex > wordsToShow - 1)){
+                arr[arrayIndex] = NULL;
+                break;
+            }
+            prevBigFreq = bigFreq;
+            bigFreq = 0;
+            arrayIndex++;
+        }
+        sortArray(arr, arrayIndex);
+        
+        /*print final result*/
+        printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
+        int x;
+        for(x = 0; x < wordsToShow; x++){
+            printf("%9d %s\n", arr[x]->value, arr[x]->key);
         }
         deleteHash(HT);
     }
@@ -110,11 +177,15 @@ int main(int argc, char *argv[]){
         int currFile = 0;       /* file being read */
         
         while (currFile != numFiles) {
-            FILE *file = fopen(argv[currFile + argSkip], "r");
+            FILE *file = fopen("testFile3.txt", "r");
             if (file == NULL) {
-                perror("fopen");
-                fclose(file);
-                currFile++;
+                fprintf (stderr,
+                         "%s: No such file or directory\n",
+                         argv[currFile + argSkip]);
+                printf("The top %d words (out of %d) are:\n",
+                       wordsToShow, HT->n);
+                
+                exit(EXIT_FAILURE);
                 break;
             }
             word = malloc(sizeof(char) * 50);
@@ -136,7 +207,7 @@ int main(int argc, char *argv[]){
             printf("The top %d words (out of %d) are:", wordsToShow, HT->n);
         }
         if (HT->n == 0) {
-            printf("No words to show\n");
+            printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
             exit(EXIT_SUCCESS);
         }
         
@@ -394,47 +465,34 @@ struct data *sortArray(struct data *arr[], int size){
     int prevFreq = 0;
     int currBigFreq = 0;
     struct data *e;
-    int nextPrint = 0;
-    int newFreq = 0;
-    int start = 1;
+    int nextPrintIndx = 0;
     
-    /*take first of array*/
-    prevFreq = arr[0]->value;
     /*iterate through array*/
-    while(nextPrint+1 != size){
-        if(nextPrint != 0){
-            start = ++nextPrint;
-        }
-        prevFreq = arr[start]->value;
+    while(nextPrintIndx < size){
+        prevFreq = arr[nextPrintIndx]->value;
         int i;
-        for(i = start+1; i < size; i++){
+        for(i = nextPrintIndx+1; i < size; i++){
             
             printArray(arr, size);
             currBigFreq = arr[i]->value;
             /*if they have the same frequency*/
             if(currBigFreq == prevFreq){
-                if(newFreq == 0){
-                    
-                    newFreq = 1;
-                }
-                if(stringSort(arr[nextPrint]->key, arr[i]->key) != 0){
-                    e = arr[nextPrint];
-                    arr[nextPrint] = arr[i];
+                if(stringSort(arr[nextPrintIndx]->key, arr[i]->key) != 1){
+                    e = arr[nextPrintIndx];
+                    arr[nextPrintIndx] = arr[i];
                     arr[i] = e;
                 }
+                prevFreq = currBigFreq;
+                currBigFreq = 0;
             } else {
-                nextPrint = i;
-                newFreq = 0;
+                nextPrintIndx++;
+                i = nextPrintIndx;
+                prevFreq = arr[nextPrintIndx]->value;
+                currBigFreq = 0;
             }
-            if(currBigFreq > prevFreq){
-                e = arr[i-1];
-                arr[i-1] = arr[i];
-                arr[i] = e;
-            }
-            prevFreq = currBigFreq;
-            currBigFreq = 0;
             
         }
+        nextPrintIndx++;
     }
     return *arr;
 }
