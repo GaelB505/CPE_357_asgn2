@@ -29,6 +29,7 @@ struct hashtable {
 /*Function calls*/
 int validInt(char string[]);
 char *getWordz(FILE *file, char *word);
+int alreadyInArr(Hashtable HT, int index, int size, struct data *arr[]);
 Hashtable createHash(int size);
 Hashtable createInitialHash(void);
 static unsigned long hashf(const char *s);
@@ -39,6 +40,7 @@ int hashSearch(Hashtable h, const char *key);
 
 
 
+
 int main(int argc, char *argv[]){
     int wordsToShow = 10;   /* the default value */
     int numFiles = argc;    /* used to track how many files will be read */
@@ -46,6 +48,8 @@ int main(int argc, char *argv[]){
     int i;
     char *word;
     char *key = NULL;
+    struct data *arr[1000];
+    int arrayIndex = 0;
     
     
     
@@ -70,8 +74,6 @@ int main(int argc, char *argv[]){
         
         if (i == 0) {               /* good, proper int */
             wordsToShow = atoi(argv[2]);
-            printf("Show the top %d words.\n", wordsToShow);
-            
         } else {
             fprintf(stderr, "usage: fw [-n num] [file1 [file2 ...] ]");
             exit(1);
@@ -88,10 +90,8 @@ int main(int argc, char *argv[]){
     
     /* at this point, we have the number of words to show */
     /* and the number of files we will be reading */
-    
     if (numFiles == 0) {
         Hashtable HT = createInitialHash();
-        printf("Read from stdin and display %d words.\n", wordsToShow);
         word = malloc(sizeof(char) * 50);
         word = getWordz(stdin, word);
         while (word != NULL) {
@@ -104,14 +104,13 @@ int main(int argc, char *argv[]){
     }
     else {
         Hashtable HT = createInitialHash();
-        
         int currFile = 0;       /* file being read */
+        
         while (currFile != numFiles) {
             FILE *file = fopen(argv[currFile + argSkip], "r");
             word = malloc(sizeof(char) * 50);
             word = getWordz(file, word);
             while (word != NULL) {
-                printf("%s\n", word);
                 key = word;
                 if(hashSearch(HT, key) == 0){
                     insertHash(HT, key, 1);
@@ -120,18 +119,66 @@ int main(int argc, char *argv[]){
                 word = malloc(sizeof(char) * 50);
                 word = getWordz(file, word);
             }
+            free(word);
+            fclose(file);
             currFile++;
-            struct data *e;
-            
+        }
+        if(wordsToShow == 0){
+            printf("The top %d words (out of %d) are:", wordsToShow, HT->n);
+        }
+        
+        
+        if(wordsToShow > HT->n){
+            wordsToShow = HT->n;
+        }
+        
+        /*finding top words*/
+        struct data *e;
+        int prevBigFreq = 0;
+        int bigFreq = 0;
+        int done = 1;
+        
+        while(done != 0){
+            /*iterate through hashtable*/
             for (i = 0; i < HT->size; i++){
+                /*if there is something in hashtable*/
                 if((e = HT->table[i]) != 0){
-                    printf("%s, %d\n", e->key, e->value);
+                    /*is it bigger than other frequencies*/
+                    if(arr[arrayIndex] == NULL && alreadyInArr(HT, i, arrayIndex, arr) == 0){
+                        arr[arrayIndex] = e;
+                        bigFreq = e->value;
+                    }
+                    if(bigFreq <= e->value){
+                        if(arrayIndex == 0){
+                            arr[arrayIndex] = e;
+                            bigFreq = e->value;
+                        } else {
+                            /*check if we didn't add this yet*/
+                            if (!alreadyInArr(HT, i, arrayIndex, arr)){
+                                /*add to array and update freq*/
+                                arr[arrayIndex] = e;
+                                bigFreq = e->value;
+                            }
+                        }
+                    }
                 }
             }
-            fclose(file);
             
+            if((prevBigFreq != bigFreq) && (arrayIndex > wordsToShow - 1)){
+                arr[arrayIndex] = NULL;
+                break;
+            }
+            prevBigFreq = bigFreq;
+            bigFreq = 0;
+            arrayIndex++;
         }
-        //        deleteHash(HT);
+        
+        /*print final result*/
+        printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
+        for(int x = 0; x < wordsToShow; x++){
+            printf("\t %d %s\n", arr[x]->value, arr[x]->key);
+        }
+        deleteHash(HT);
     }
     return 0;
 }
@@ -312,5 +359,16 @@ int validInt(char string[]) {
         }
         count++;                            /* otherwise, the value can be */
     }                                       /* converted into a string */
+    return 0;
+}
+
+int alreadyInArr(Hashtable HT, int index, int size, struct data *arr[]){
+    struct data *e = HT->table[index];
+    
+    for(int j = 0; j < size; j++){
+        if(arr[j]->key == e->key){
+            return 1;
+        }
+    }
     return 0;
 }
