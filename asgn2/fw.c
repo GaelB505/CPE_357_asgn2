@@ -9,7 +9,7 @@
 #include "sortFuncs.c"
 /*Function calls*/
 
-struct data *arr[1000];
+struct data *arr[10000];
 
 int main(int argc, char *argv[]){
     int wordsToShow = 10;   /* the default value */
@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
     char *word;
     char *key = NULL;
     int arrayIndex = 0;
-    
+    char *quasiVar = "quasi\0";
     
     
     if (argc == 1) {        /* case where no args passed */
@@ -57,10 +57,14 @@ int main(int argc, char *argv[]){
         argSkip = 1;                /* no -n, skip only first arg */
     }
     
+    /*===================================================================*/
+    /*===================================================================*/
     /* at this point, we have the number of words to show */
     /* and the number of files we will be reading */
+    
+    printf("point 1");
+    Hashtable HT = createInitialHash();
     if (numFiles == 0) {
-        Hashtable HT = createInitialHash();
         word = malloc(sizeof(char) * 50);
         word = getWords(stdin, word);
         while (word != NULL) {
@@ -73,75 +77,10 @@ int main(int argc, char *argv[]){
             word = getWords(stdin, word);
         }
         free(word);
-        
-        if(wordsToShow == 0){
-            printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
-        }
-        if (HT->n == 0) {
-            printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
-            exit(EXIT_SUCCESS);
-        }
-        
-        
-        if(wordsToShow > HT->n){
-            wordsToShow = HT->n;
-        }
-        
-        /*finding top words*/
-        struct data *e;
-        int prevBigFreq = 0;
-        int bigFreq = 0;
-        int done = 1;
-        
-        while(done != 0){
-            /*iterate through hashtable*/
-            for (i = 0; i < HT->size; i++){
-                /*if there is something in hashtable*/
-                if((e = HT->table[i]) != 0){
-                    /*is it bigger than other frequencies*/
-                    if(arr[arrayIndex] == NULL &&
-                       alreadyInArr(HT, i, arrayIndex, arr) == 0){
-                        arr[arrayIndex] = e;
-                        bigFreq = e->value;
-                    }
-                    if(bigFreq <= e->value){
-                        if(arrayIndex == 0){
-                            arr[arrayIndex] = e;
-                            bigFreq = e->value;
-                        } else {
-                            /*check if we didn't add this yet*/
-                            if (!alreadyInArr(HT, i, arrayIndex, arr)){
-                                /*add to array and update freq*/
-                                arr[arrayIndex] = e;
-                                bigFreq = e->value;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            if((prevBigFreq != bigFreq) && (arrayIndex > wordsToShow - 1)){
-                arr[arrayIndex] = NULL;
-                break;
-            }
-            prevBigFreq = bigFreq;
-            bigFreq = 0;
-            arrayIndex++;
-        }
-        sortArray(arr, arrayIndex);
-        
-        /*print final result*/
-        printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
-        int x;
-        for(x = 0; x < wordsToShow; x++){
-            printf("%9d %s\n", arr[x]->value, arr[x]->key);
-        }
-        deleteHash(HT);
     }
     else {
-        Hashtable HT = createInitialHash();
+        printf("point 2");
         int currFile = 0;       /* file being read */
-        
         while (currFile != numFiles) {
             FILE *file = fopen(argv[currFile + argSkip], "r");
             if (file == NULL) {
@@ -165,69 +104,84 @@ int main(int argc, char *argv[]){
             }
             currFile++;
         }
-        if(wordsToShow == 0){
-            printf("The top %d words (out of %d) are:", wordsToShow, HT->n);
-        }
-        if (HT->n == 0) {
-            printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
-            exit(EXIT_SUCCESS);
-        }
+    }
+
+    /*===================================================================*/
+    /*===================================================================*/
+    /*At this point, we have all our words and frequencies*/
+
+    printf("point 3");
+    if(wordsToShow == 0){
+        printf("The top %d words (out of %d) are:", wordsToShow, HT->n);
+    }
+    if (HT->n == 0) {
         printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
-        
-        if(wordsToShow > HT->n){
-            wordsToShow = HT->n;
-        }
-        
-        /*finding top words*/
-        struct data *e;
-        int prevBigFreq = 0;
-        int bigFreq = 0;
-        int done = 1;
-        
-        while(done != 0){
-            /*iterate through hashtable*/
-            for (i = 0; i < HT->size; i++){
-                /*if there is something in hashtable*/
-                if((e = HT->table[i]) != 0){
-                    /*is it bigger than other frequencies*/
-                    if(arr[arrayIndex] == NULL &&
-                       alreadyInArr(HT, i, arrayIndex, arr) == 0){
+        exit(EXIT_SUCCESS);
+    }
+    printf("The top %d words (out of %d) are:\n", wordsToShow, HT->n);
+    
+    if(wordsToShow > HT->n){
+        wordsToShow = HT->n;
+    }
+    /*finding top words*/
+    struct data *e;
+    int prevBigFreq = 0;
+    int bigFreq = 0;
+    int done = 1;
+    
+    printf("point 4");
+    while(done != 0){
+        /*iterate through hashtable*/
+        for (i = 0; i < HT->size; i++){
+            /*if there is something in hashtable*/
+            if((e = HT->table[i]) != 0){
+                /*is it bigger than other frequencies*/
+                if(arr[arrayIndex] == NULL &&
+                    alreadyInArr(HT, i, arrayIndex, arr) == 0){
+                    arr[arrayIndex] = e;
+                    bigFreq = e->value;
+                }
+                if(bigFreq <= e->value){
+                    if(arrayIndex == 0){
                         arr[arrayIndex] = e;
                         bigFreq = e->value;
-                    }
-                    if(bigFreq <= e->value){
-                        if(arrayIndex == 0){
+                    } else {
+                        /*check if we didn't add this yet*/
+                        if (!alreadyInArr(HT, i, arrayIndex, arr)){
+                            /*add to array and update freq*/
                             arr[arrayIndex] = e;
                             bigFreq = e->value;
-                        } else {
-                            /*check if we didn't add this yet*/
-                            if (!alreadyInArr(HT, i, arrayIndex, arr)){
-                                /*add to array and update freq*/
-                                arr[arrayIndex] = e;
-                                bigFreq = e->value;
-                            }
                         }
                     }
                 }
             }
-            
-            if((prevBigFreq != bigFreq) && (arrayIndex > wordsToShow - 1)){
-                arr[arrayIndex] = NULL;
-                break;
-            }
-            prevBigFreq = bigFreq;
-            bigFreq = 0;
-            arrayIndex++;
         }
-        sortArray(arr, arrayIndex);
+        /*printf("prevBigFreq: %d     bigFreq: %d\n", prevBigFreq, bigFreq);*/
+        if((prevBigFreq != bigFreq) && (arrayIndex > wordsToShow - 1)){
+            arr[arrayIndex] = NULL;
+            break;
+        }
+        prevBigFreq = bigFreq;
+        bigFreq = 0;
+        arrayIndex++;
+    }
+    printf("point 5");
+    /*printArray(arr, arrayIndex);*/
+    sortArray(arr, arrayIndex);
+    
+
+    int x;
+    for(x = 0; x < wordsToShow; x++){
+        printf("%9d %s\n", arr[x]->value, arr[x]->key);
+    }
         
     
-        int x;
-        for(x = 0; x < wordsToShow; x++){
-            printf("%9d %s\n", arr[x]->value, arr[x]->key);
-        }
-        deleteHash(HT);
-    }
+
+    deleteHash(HT);
+    return 0;
+
+
+
     return 0;
 }
 

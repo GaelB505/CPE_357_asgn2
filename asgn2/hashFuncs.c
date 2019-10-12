@@ -33,10 +33,9 @@ int hashSearch(Hashtable h, const char *key);
 int alreadyInArr(Hashtable HT, int index, int size, struct data *arr[]);
 
 
-#define HASHSIZE 1000 /*number of spots in memory*/
 #define GROWTH 2
 #define LOAD_FACTOR 1
-#define INITIAL_SIZE 1000
+#define INITIAL_SIZE 10000000
 
 
 int alreadyInArr(Hashtable HT, int index, int size, struct data *arr[]){
@@ -153,9 +152,10 @@ void insertHash(Hashtable h, const char *key, int value){
     h->table[f] = e;
     
     h->n++;
-    
+    /*printf("%d, %d\n", h->n, h->size);*/
     /*expand table if at limit*/
-    if(h->n >= (h->size * LOAD_FACTOR - 2)){
+    if(h->n == (h->size * LOAD_FACTOR - 2)){
+        /*printf("expanding\n");*/
         expand(h);
     }
 }

@@ -1,0 +1,5 @@
+Gael Berbessou (gberbess)
+Ashley Masuda (asmasuda)
+
+For man, the program appears to stop going through files, even though that aspect was previously tested, both in instructor test cases and personal tests. 
+ReallyLongLine appears to get caught in an infinite loop that we were unable to find even after a lot of testing and debugging. 
